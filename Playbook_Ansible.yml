@@ -1,15 +1,14 @@
-- name: Check if a user exists in Azure AD
+- name: Create a New Azure AD User
   hosts: localhost
-  gather_facts: false
   connection: local
   tasks:
-    - name: Get user details
-      azure.azcollection.azure_ad_user_info:
+    - name: Create user
+      azure.azcollection.azure_ad_user:
         client_id: "{{ lookup('env', 'AZURE_CLIENT_ID') }}"
         secret: "{{ lookup('env', 'AZURE_CLIENT_SECRET') }}"
         tenant: "{{ lookup('env', 'AZURE_TENANT_ID') }}"
-        object_id: "user@example.com"
-      register: user_info
-
-    - debug:
-        var: user_info
+        user_principal_name: "newuser@example.com"
+        display_name: "New User"
+        mail_nickname: "newuser"
+        password: "P@ssw0rd123!"
+        account_enabled: true
