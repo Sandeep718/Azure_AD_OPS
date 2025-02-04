@@ -3,12 +3,12 @@
   connection: local
   tasks:
     - name: Create user
-      azure.azcollection.azure_ad_user:
-        client_id: "{{ lookup('env', 'AZURE_CLIENT_ID') }}"
-        secret: "{{ lookup('env', 'AZURE_CLIENT_SECRET') }}"
-        tenant: "{{ lookup('env', 'AZURE_TENANT_ID') }}"
-        user_principal_name: "newuser@example.com"
-        display_name: "New User"
-        mail_nickname: "newuser"
-        password: "P@ssw0rd123!"
-        account_enabled: true
+        azure.azcollection.azure_ad_user:
+          client_id: "{{ lookup('env', 'AZURE_CLIENT_ID') }}"
+          secret: "{{ lookup('env', 'AZURE_CLIENT_SECRET') }}"
+          tenant: "{{ lookup('env', 'AZURE_TENANT_ID') }}"
+          user_principal_name: "newuser@example.com"
+          display_name: "New User"
+          mail_nickname: "newuser"
+          password: "P@ssw0rd123!"
+          account_enabled: true
