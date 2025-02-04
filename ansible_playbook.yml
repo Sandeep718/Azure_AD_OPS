@@ -1,5 +1,6 @@
 - name: Check if a user exists in Azure AD
   hosts: localhost
+  gather_facts: false
   connection: local
   tasks:
     - name: Get user details
@@ -7,7 +8,7 @@
         client_id: "{{ lookup('env', 'AZURE_CLIENT_ID') }}"
         secret: "{{ lookup('env', 'AZURE_CLIENT_SECRET') }}"
         tenant: "{{ lookup('env', 'AZURE_TENANT_ID') }}"
-        object_id: "Jayanta.Banerjee@amitomar63gmail.onmicrosoft.com"
+        object_id: "user@example.com"
       register: user_info
 
     - debug:
