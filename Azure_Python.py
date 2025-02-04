@@ -50,3 +50,4 @@ def create_user(user_details):
     headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
     response = requests.post(url, headers=headers, json=user_details)
     return response.status_code in [200, 201]
+check_user(Abhishek.U@amitomar63gmail.onmicrosoft.com)
