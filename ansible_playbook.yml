@@ -1,5 +1,6 @@
 - name: Check if a user exists in Azure AD
   hosts: localhost
+  gather_facts: false
   connection: local
   tasks:
     - name: Get user details
