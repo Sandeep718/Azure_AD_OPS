@@ -1,16 +1,14 @@
-- name: Manage Azure AD Users
+- name: Check if a user exists in Azure AD
   hosts: localhost
-  gather_facts: no
+  connection: local
   tasks:
-    - name: Install required Python packages
-      pip:
-        name:
-          - msal
-          - requests
-        state: present
-        executable: pip3 
-    - name: Check if user exists
-      shell: python3 Azure_Python.py check_user "'{{ Abhishek.U@amitomar63gmail.onmicrosoft.com }}'"
-      register: user_exists
+    - name: Get user details
+      azure.azcollection.azure_ad_user_info:
+        client_id: "{{ lookup('env', 'AZURE_CLIENT_ID') }}"
+        secret: "{{ lookup('env', 'AZURE_CLIENT_SECRET') }}"
+        tenant: "{{ lookup('env', 'AZURE_TENANT_ID') }}"
+        object_id: "Jayanta.Banerjee@amitomar63gmail.onmicrosoft.com"
+      register: user_info
 
-  
+    - debug:
+        var: user_info
