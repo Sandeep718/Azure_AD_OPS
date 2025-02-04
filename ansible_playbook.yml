@@ -10,7 +10,7 @@
         state: present
         executable: pip3 
     - name: Check if user exists
-      shell: python3 Azure_Python.py check_user '{{ "Abhishek.U@amitomar63gmail.onmicrosoft.com" }}'
+      shell: python3 Azure_Python.py check_user "'{{ Abhishek.U@amitomar63gmail.onmicrosoft.com }}'"
       register: user_exists
 
   
