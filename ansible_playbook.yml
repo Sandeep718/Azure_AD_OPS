@@ -3,7 +3,7 @@
   gather_facts: no
   tasks:
     - name: Check if user exists
-      shell: python3 azure_ad_operations.py check_user {{ Abhishek.U@amitomar63gmail.onmicrosoft.com }}
+      shell: python3 azure_ad_operations.py check_user '{{ Abhishek.U@amitomar63gmail.onmicrosoft.com }}'
       register: user_exists
 
     - name: Create user if not exists
