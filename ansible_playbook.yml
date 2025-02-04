@@ -2,6 +2,13 @@
   hosts: localhost
   gather_facts: no
   tasks:
+    - name: Install required Python packages
+      pip:
+        name:
+          - msal
+          - requests
+        state: present
+      become: yes
     - name: Check if user exists
       shell: python3 Azure_Python.py check_user '{{ "Abhishek.U@amitomar63gmail.onmicrosoft.com" }}'
       register: user_exists
