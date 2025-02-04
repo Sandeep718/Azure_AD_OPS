@@ -1,5 +1,5 @@
-import msal
-import requests
+# import msal
+# import requests
 
 TENANT_ID = "y195e8969-c853-47b4-83d0-36e044d83923"
 CLIENT_ID = "e2e46ae3-2dee-4eed-a074-ddffd760ab2b"
