@@ -1,0 +1,17 @@
+- name: Manage Azure AD Users
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Check if user exists
+      shell: python3 azure_ad_operations.py check_user {{ user_email }}
+      register: user_exists
+
+    - name: Create user if not exists
+      shell: python3 azure_ad_operations.py create_user '{{ user_details }}'
+      when: user_exists.stdout == "False"
+
+    - name: Enable/Disable account
+      shell: python3 azure_ad_operations.py set_account_status {{ user_id }} {{ enable_status }}
+
+    - name: Change Group Assignment
+      shell: python3 azure_ad_operations.py change_group_assignment {{ user_id }} {{ group_id }} {{ action }}
