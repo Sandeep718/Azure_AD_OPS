@@ -7,10 +7,9 @@
   connection: local
   tasks:
     - name: Get user details
-      azure.azcollection.azure_ad_user_info:
-        client_id: "{{ lookup('env', 'AZURE_CLIENT_ID') }}"
-        secret: "{{ lookup('env', 'AZURE_CLIENT_SECRET') }}"
-        tenant: "{{ lookup('env', 'AZURE_TENANT_ID') }}"
+        client_id: "{{ client_id }}"
+        secret: "{{ secret') }}"
+        tenant: "{{ tenant }}"
         object_id: "user@example.com"
       register: user_info
 
