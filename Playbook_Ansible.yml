@@ -1,49 +1,21 @@
-- name: Azure AD Automation using Ansible
+- name: Manage Azure AD Users
   hosts: localhost
-  connection: local
   gather_facts: no
- 
-  vars:
-    graph_api_url: "https://graph.microsoft.com/v1.0"
- 
   tasks:
-    - name: Get Access Token
-      uri:
-        url: "https://login.microsoftonline.com/{{ tenant_id }}/oauth2/v2.0/token"
-        method: POST
-        headers:
-          Content-Type: "application/x-www-form-urlencoded"
-        body:
-          client_id: "{{ client_id }}"
-          client_secret: "{{ client_secret }}"
-          scope: "https://graph.microsoft.com/.default"
-          grant_type: "client_credentials"
-        body_format: form-urlencoded
-        return_content: yes
-      register: token_response
-      failed_when: token_response.status != 200
-    - name: Set access token fact
-      set_fact:
-        access_token: "{{ token_response.json.access_token }}"
-      when: token_response.status == 200
 
-    - name: Disable Azure AD User Account
-      uri:
-        url: "{{ graph_api_url }}/users/{{ Jayanta.Banerjee@amitomar63gmail.onmicrosoft.com }}"
-        method: PATCH
-        headers:
-          Authorization: "Bearer {{ access_token }}"
-          Content-Type: "application/json"
-        body:
-          {
-            "accountEnabled": false
-          }
-        body_format: json
-        return_content: yes
-      register: disable_user_response
-     
-    - name: Debug - Show Disable User Account Response
+    - name: Authenticate with Azure AD
+      shell: az login --service-principal -u "{{ client_id }}" -p "{{ client_secret }}" --tenant "{{ tenant_id }}"
+      register: auth_result
+
+    - name: Display login result
       debug:
-        msg: "Disable User Account: {{ 'Successful' if disable_user_response.status == 204 else 'Failed' }}"
+        var: auth_result.stdout_lines
 
+    - name: Check if user exists
+      shell: az ad user show --id "{{ user_principal_name }}" --query "id" --output tsv
+      register: user_check
+      ignore_errors: yes
 
+    - name: Display user check result
+      debug:
+        var: user_check.stdout
