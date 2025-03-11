@@ -1,21 +1,100 @@
-- name: Manage Azure AD Users
+---
+- name: Azure AD Automation using Ansible
   hosts: localhost
+  connection: local
   gather_facts: no
+
+  vars:
+    graph_api_url: "https://graph.microsoft.com/v1.0"
+
   tasks:
+    - name: Get Access Token
+      uri:
+        url: "https://login.microsoftonline.com/{{ tenant_id }}/oauth2/v2.0/token"
+        method: POST
+        headers:
+          Content-Type: "application/x-www-form-urlencoded"
+        body:
+          client_id: "{{ client_id }}"
+          client_secret: "{{ client_secret }}"
+          scope: "https://graph.microsoft.com/.default"
+          grant_type: "client_credentials"
+        body_format: form-urlencoded
+        return_content: yes
+      register: token_response
+      failed_when: token_response.status != 200
 
-    - name: Authenticate with Azure AD
-      shell: az login --service-principal -u "{{ client_id }}" -p "{{ client_secret }}" --tenant "{{ tenant_id }}"
-      register: auth_result
+    - name: Set access token fact
+      set_fact:
+        access_token: "{{ token_response.json.access_token }}"
+      when: token_response.status == 200
 
-    - name: Display login result
+    - name: Debug - Show Access Token Status
       debug:
-        var: auth_result.stdout_lines
+        msg: "Access Token Retrieval: {{ 'Successful' if token_response.status == 200 else 'Unsuccessful' }}"
 
-    - name: Check if user exists
-      shell: az ad user show --id "{{ user_principal_name }}" --query "id" --output tsv
+    - name: Check for User
+      uri:
+        url: "{{ graph_api_url }}/users/Jayanta.Banerjee@amitomar63gmail.onmicrosoft.com"
+        method: GET
+        headers:
+          Authorization: "Bearer {{ access_token }}"
+          Content-Type: "application/json"
       register: user_check
-      ignore_errors: yes
+      failed_when: user_check.status not in [200, 404]
 
-    - name: Display user check result
+    - name: Debug - Show User Check Result
       debug:
-        var: user_check.stdout
+        msg: "User Check: {{ 'User Found' if user_check.status == 200 else 'User Not Found' }}"
+    
+    - name: Create User if Not Exists
+      uri:
+        url: "{{ graph_api_url }}/users"
+        method: POST
+        headers:
+          Authorization: "Bearer {{ access_token }}"
+          Content-Type: "application/json"
+        body:
+          accountEnabled: true
+          displayName: "Akhilsandeep3"
+          mailNickname: "AS3"
+          userPrincipalName: "AS3@amitomar63gmail.onmicrosoft.com"
+          passwordProfile:
+            forceChangePasswordNextSignIn: true
+            password: "TempPass@123"
+        body_format: json
+      register: user_creation
+      when: user_check.status == 404
+
+    - name: Debug - Show User Creation Status
+      debug:
+        msg: "User Creation: {{ 'Successful' if user_creation.status in [200, 201] else 'Unsuccessful' }}"
+      when: user_check.status == 404
+
+    - name: Enable User if Disabled
+      uri:
+        url: "{{ graph_api_url }}/users/{{ newuser1@amitomar63gmail.onmicrosoft.com }}?$select=accountEnabled"
+        method: PATCH
+        headers:
+          Authorization: "Bearer {{ access_token }}"
+          Content-Type: "application/json"
+        body:
+          accountEnabled: true
+        body_format: json
+      register: user_enable
+      when: user_check.status == 200 and not user_check.json.get('accountEnabled', true)
+
+    # - name: Check if User is Enabled
+    #   uri:
+    #     url: "{{ graph_api_url }}/users/{{ Jayanta.Banerjee@amitomar63gmail.onmicrosoft.com }}?$select=accountEnabled"
+    #     method: GET
+    #     headers:
+    #       Authorization: "Bearer {{ access_token }}"
+    #       Content-Type: "application/json"
+    #   register: user_check
+    #   failed_when: user_check.status not in [200, 404]
+
+       
+
+
+   
