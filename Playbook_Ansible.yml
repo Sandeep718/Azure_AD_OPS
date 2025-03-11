@@ -6,6 +6,14 @@
 
   vars:
     graph_api_url: "https://graph.microsoft.com/v1.0"
+    tenant_id: "{{ azure_tenant_id }}"
+    client_id: "{{ azure_client_id }}"
+    client_secret: "{{ azure_client_secret }}"
+    user_principal_name: "Jayanta.Banerjee@amitomar63gmail.onmicrosoft.com"
+    new_user_principal_name: "newuser1@amitomar63gmail.onmicrosoft.com"
+    new_user_display_name: "Akhilsandeep3"
+    new_user_mail_nickname: "AS3"
+    temp_password: "TempPass@123"
 
   tasks:
     - name: Get Access Token
@@ -24,18 +32,14 @@
       register: token_response
       failed_when: token_response.status != 200
 
-    - name: Set access token fact
+    - name: Set Access Token Fact
       set_fact:
         access_token: "{{ token_response.json.access_token }}"
       when: token_response.status == 200
 
-    - name: Debug - Show Access Token Status
-      debug:
-        msg: "Access Token Retrieval: {{ 'Successful' if token_response.status == 200 else 'Unsuccessful' }}"
-
     - name: Check for User
       uri:
-        url: "{{ graph_api_url }}/users/Jayanta.Banerjee@amitomar63gmail.onmicrosoft.com"
+        url: "{{ graph_api_url }}/users/{{ user_principal_name }}"
         method: GET
         headers:
           Authorization: "Bearer {{ access_token }}"
@@ -43,10 +47,6 @@
       register: user_check
       failed_when: user_check.status not in [200, 404]
 
-    - name: Debug - Show User Check Result
-      debug:
-        msg: "User Check: {{ 'User Found' if user_check.status == 200 else 'User Not Found' }}"
-    
     - name: Create User if Not Exists
       uri:
         url: "{{ graph_api_url }}/users"
@@ -56,24 +56,19 @@
           Content-Type: "application/json"
         body:
           accountEnabled: true
-          displayName: "Akhilsandeep3"
-          mailNickname: "AS3"
-          userPrincipalName: "AS3@amitomar63gmail.onmicrosoft.com"
+          displayName: "{{ new_user_display_name }}"
+          mailNickname: "{{ new_user_mail_nickname }}"
+          userPrincipalName: "{{ new_user_principal_name }}"
           passwordProfile:
             forceChangePasswordNextSignIn: true
-            password: "TempPass@123"
+            password: "{{ temp_password }}"
         body_format: json
       register: user_creation
       when: user_check.status == 404
 
-    - name: Debug - Show User Creation Status
-      debug:
-        msg: "User Creation: {{ 'Successful' if user_creation.status in [200, 201] else 'Unsuccessful' }}"
-      when: user_check.status == 404
-
-    - name: Enable User if Disabled
+    - name: Enable User Account
       uri:
-        url: "{{ graph_api_url }}/users/{{ newuser1@amitomar63gmail.onmicrosoft.com }}?$select=accountEnabled"
+        url: "{{ graph_api_url }}/users/{{ user_principal_name }}"
         method: PATCH
         headers:
           Authorization: "Bearer {{ access_token }}"
@@ -82,19 +77,17 @@
           accountEnabled: true
         body_format: json
       register: user_enable
-      when: user_check.status == 200 and not user_check.json.get('accountEnabled', true)
+      when: user_check.status == 200 and not user_check.json.accountEnabled
 
-    # - name: Check if User is Enabled
-    #   uri:
-    #     url: "{{ graph_api_url }}/users/{{ Jayanta.Banerjee@amitomar63gmail.onmicrosoft.com }}?$select=accountEnabled"
-    #     method: GET
-    #     headers:
-    #       Authorization: "Bearer {{ access_token }}"
-    #       Content-Type: "application/json"
-    #   register: user_check
-    #   failed_when: user_check.status not in [200, 404]
-
-       
-
-
-   
+    - name: Disable User Account
+      uri:
+        url: "{{ graph_api_url }}/users/{{ user_principal_name }}"
+        method: PATCH
+        headers:
+          Authorization: "Bearer {{ access_token }}"
+          Content-Type: "application/json"
+        body:
+          accountEnabled: false
+        body_format: json
+      register: user_disable
+      when: user_check.status == 200 and user_check.json.accountEnabled
